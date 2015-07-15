@@ -8,8 +8,10 @@ It implements:
 - **Gated Recurrent Neural Networks** (GRU)
 - **Gated Feedback Recurrent Neural Networks** (GF-RNN)
 - **Gated Feedback Long Short-Term Memory networks** (GF-LSTM)
-- In fact, the library is more general because it has functionality to construct arbitrary **expression graphs** over which the library can perform **automatic differentiation** similar to what you may find in Theano for Python, or in Torch etc. Currently, the code uses this very general functionality to implement RNN/LSTM/GRU, but one can build arbitrary Neural Networks and do automatic backprop.
-- For information an the **Gated Feedback** variants see [Gated Feedback Recurrent Neural Networks](http://arxiv.org/abs/1502.02367) 
+
+In fact, the library is more general because it has functionality to construct arbitrary **expression graphs** over which the library can perform **automatic differentiation** similar to what you may find in Theano for Python, or in Torch etc. Currently, the code uses this very general functionality to implement RNN/LSTM/GRU, but one can build arbitrary Neural Networks and do automatic backprop.
+
+For information an the **Gated Feedback** variants see [Gated Feedback Recurrent Neural Networks](http://arxiv.org/abs/1502.02367)
 
 
 ## Online demo of original library in javascript
@@ -65,25 +67,26 @@ outMat.dw = probs.w
 outMat.dw[ix_target] -= 1;
 
 # in real application you'd probably have a desired class
-# for every input, so you'd iteratively se the .dw loss on each
-# one. In the example provided demo we are, for example,
+# for every input, so you'd iteratively see the .dw loss on each
+# one. In the example provided demo we are
 # predicting the index of the next letter in an input sentence.
 
 # update the LSTM parameters
 backprop!(G)
-s = Solver() # RMSProp optimizer
+s = RMSPropSolver() # RMSProp optimizer
 
 # perform RMSprop update with
 # step size of 0.01
 # L2 regularization of 0.00001
 # and clipping the gradients at 5.0 elementwise
-step(s, lstm, 0.01, 0.00001, 5.0);
+sparams = RMSPropSolverParams(0.01, 0.0001, 5.0)
+step!(s, lstm, sparams);
 ```
 
 A much more detailed example can be found in the example folder.
 
 ##Credits
-This library draws on the work of [Andrej Karpathy](https://github.com/karpathy). Speed enhancements were added by [Iain Dunning](https://github.com/IainNZ). The Gated Recurrent Neural Network implementation and Gated Feedback variants were added by [Paul Heideman](https://github.com/paulheideman).
+This library draws on the work of [Andrej Karpathy](https://github.com/karpathy). Speed enhancements were added by [Iain Dunning](https://github.com/IainNZ). The Gated Recurrent Neural Network implementation and Gated Feedback variants were added by [Paul Heideman](https://github.com/paulheideman). [Harold Soh](https://github.com/haroldsoh) implemented the Adam optimizer.
 
 ## License
 MIT
