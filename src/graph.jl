@@ -5,11 +5,11 @@ type Graph
    Graph(backPropNeeded::Bool) = new(Array(Function,0),backPropNeeded)
 end
 
-function backprop(g::Graph)
+function backprop!(g::Graph)
     for i = length(g.backprop):-1:1  g.backprop[i]() end
 end
 
-function rowpluck(g::Graph, m::NNMatrix, ix::Int)
+function rowpluck!(g::Graph, m::NNMatrix, ix::Int)
     # pluck a row of m and return it as a column vector
     out = NNMatrix(m.d, 1)
     out.w[:,1] = m.w[ix,:]'
@@ -22,7 +22,7 @@ function rowpluck(g::Graph, m::NNMatrix, ix::Int)
     return out
 end
 
-function concat(g::Graph, ms::NNMatrix...)
+function concat!(g::Graph, ms::NNMatrix...)
     n = 0
     @inbounds for i in 1:length(ms)
         n += ms[i].n
@@ -50,7 +50,7 @@ function concat(g::Graph, ms::NNMatrix...)
     return out
 end
 
-function tanh(g::Graph, m::NNMatrix)
+function tanh!(g::Graph, m::NNMatrix)
     out = NNMatrix(m.n, m.d)
     out.w = tanh(m.w)
     if g.doBackprop
@@ -64,7 +64,7 @@ function tanh(g::Graph, m::NNMatrix)
     return out
 end
 
-function sigmoid(g::Graph, m::NNMatrix)
+function sigmoid!(g::Graph, m::NNMatrix)
     out = NNMatrix(m.n, m.d,
             [1.0 / (1.0 + exp(-m.w[i,j])) for i in 1:m.n, j in 1:m.d],
             zeros(m.n, m.d))
@@ -79,7 +79,7 @@ function sigmoid(g::Graph, m::NNMatrix)
     return out
 end
 
-function relu(g::Graph, m::NNMatrix)
+function relu!(g::Graph, m::NNMatrix)
     out = NNMatrix(m.n, m.d)
     @inbounds for j = 1:m.d, i = 1:m.n
         out.w[i,j] = m.w[i,j] < 0. ? 0. : m.w[i,j]
@@ -95,7 +95,7 @@ function relu(g::Graph, m::NNMatrix)
     return out
 end
 
-function mul(g::Graph, m1::NNMatrix, m2::NNMatrix)
+function mul!(g::Graph, m1::NNMatrix, m2::NNMatrix)
     out = NNMatrix(m1.n, m2.d, m1.w * m2.w, zeros(m1.n, m2.d))
     if g.doBackprop
         push!(g.backprop,
@@ -113,7 +113,7 @@ function mul(g::Graph, m1::NNMatrix, m2::NNMatrix)
     return out
 end
 
-function mul(g::Graph, m::NNMatrix, c::Float64)
+function mul!(g::Graph, m::NNMatrix, c::Float64)
     out = NNMatrix(m.n, m.d, m.w .* c, zeros(m.n, m.d))
     if g.doBackprop
         push!(g.backprop,
@@ -124,7 +124,7 @@ function mul(g::Graph, m::NNMatrix, c::Float64)
     return out
 end
 
-function add(g::Graph, ms::NNMatrix...)
+function add!(g::Graph, ms::NNMatrix...)
     out = NNMatrix(ms[1].n, ms[1].d, zeros(ms[1].n, ms[1].d), zeros(ms[1].n, ms[1].d))
     @inbounds for m in ms
         @inbounds for j in 1:m.d, i in 1:m.n
@@ -144,7 +144,7 @@ function add(g::Graph, ms::NNMatrix...)
     return out
 end
 
-function add(g::Graph, m::NNMatrix, c::Float64)
+function add!(g::Graph, m::NNMatrix, c::Float64)
     out = NNMatrix(m.n, m.d, m.w .+ c, zeros(m.n, m.d))
     if g.doBackprop
         push!(g.backprop,
@@ -155,7 +155,7 @@ function add(g::Graph, m::NNMatrix, c::Float64)
     return out
 end
 
-function eltmul(g::Graph, m1::NNMatrix, m2::NNMatrix) # element-wise multiplication
+function eltmul!(g::Graph, m1::NNMatrix, m2::NNMatrix) # element-wise multiplication
     out = NNMatrix(m1.n, m2.d, m1.w .* m2.w, zeros(m1.n, m2.d))
     if g.doBackprop
         push!(g.backprop,

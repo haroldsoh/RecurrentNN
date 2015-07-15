@@ -90,7 +90,7 @@ type GFGRU <: Model
     end
 end
 
-function forwardprop(g::Graph, model::GFGRU, x, prev)
+function forwardprop!(g::Graph, model::GFGRU, x, prev)
 
     # forward prop for a single tick of GFGRU
     # g is graph to append ops to
@@ -109,7 +109,7 @@ function forwardprop(g::Graph, model::GFGRU, x, prev)
     end
 
     hidden = Array(NNMatrix,0)
-    hstar = concat(g, hiddenprevs...)
+    hstar = concat!(g, hiddenprevs...)
     layers = length(model.hiddensizes)
     for d in 1:length(model.hiddensizes) # for each hidden layer
 
@@ -132,46 +132,45 @@ function forwardprop(g::Graph, model::GFGRU, x, prev)
         bc = model.hdlayers[d].bc
 
         # update gate
-        h0 = mul(g, wux, input)
-        h1 = mul(g, wuh, hdprev)
-        updategate = sigmoid(g, add(g, h0, h1, bu))
+        h0 = mul!(g, wux, input)
+        h1 = mul!(g, wuh, hdprev)
+        updategate = sigmoid!(g, add!(g, h0, h1, bu))
 
         # reset gate
-        h2 = mul(g, wrx, input)
-        h3 = mul(g, wrh, hdprev)
-        resetgate = sigmoid(g, add(g, h2, h3, br))
+        h2 = mul!(g, wrx, input)
+        h3 = mul!(g, wrh, hdprev)
+        resetgate = sigmoid!(g, add!(g, h2, h3, br))
 
         # global reset gates
         gr = Array(NNMatrix, layers)
         @inbounds for gd in 1:layers
-            hg = mul(g, wgx[gd], input)
-            hu = mul(g, wgh[gd], hstar)
-            gr[gd] = sigmoid(g, add(g, hg, hu, bg[gd]))
+            hg = mul!(g, wgx[gd], input)
+            hu = mul!(g, wgh[gd], hstar)
+            gr[gd] = sigmoid!(g, add!(g, hg, hu, bg[gd]))
         end
 
         # candidate
-        p1 = mul(g, wcx, input)
+        p1 = mul!(g, wcx, input)
         h = Array(NNMatrix, layers)
         @inbounds for hd in 1:layers
-            hi = mul(g, wch[hd], hiddenprevs[hd])
-            h[hd] = eltmul(g, gr[hd], hi)
+            hi = mul!(g, wch[hd], hiddenprevs[hd])
+            h[hd] = eltmul!(g, gr[hd], hi)
         end
-        p2 = eltmul(g, resetgate, add(g, h...))
-        candidate = tanh(g, add(g, p1, p2, bc))
+        p2 = eltmul!(g, resetgate, add!(g, h...))
+        candidate = tanh!(g, add!(g, p1, p2, bc))
 
         # compute hidden state
         ones = onesNNMat(updategate.n, updategate.d)
-        oneminusupdate = add(g, mul(g, updategate, -1.0), 1.0)
-        hidden_d = add(g, eltmul(g, oneminusupdate, hdprev),
-                          eltmul(g, updategate, candidate))
+        oneminusupdate = add!(g, mul!(g, updategate, -1.0), 1.0)
+        hidden_d = add!(g, eltmul!(g, oneminusupdate, hdprev),
+                          eltmul!(g, updategate, candidate))
 
         push!(hidden,hidden_d)
     end
 
     # one decoder to outputs at end
-    output = add(g, mul(g, model.whd, hidden[end]),model.bd)
+    output = add!(g, mul!(g, model.whd, hidden[end]),model.bd)
 
     # return cell memory, hidden representation and output
     return hidden, output
 end
-

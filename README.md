@@ -46,9 +46,9 @@ prevcell = Array(NNMatrix,0) #  holds final cell output of the LSTM model
 out  = NNMatrix(outputsize,1) # output of the recurrent model
 prev = (prevhd, prevcell, out)
 
-out1 = forwardprop(G, lstm, x1, prev)
-out2 = forwardprop(G, lstm, x2, out1);
-out3 = forwardprop(G, lstm, x3, out2);
+out1 = forwardprop!(G, lstm, x1, prev)
+out2 = forwardprop!(G, lstm, x2, out1);
+out3 = forwardprop!(G, lstm, x3, out2);
 
 # the last part of the tuple contains the outputs:
 outMat =  prev[end]
@@ -70,7 +70,7 @@ outMat.dw[ix_target] -= 1;
 # predicting the index of the next letter in an input sentence.
 
 # update the LSTM parameters
-backprop(G)
+backprop!(G)
 s = Solver() # RMSProp optimizer
 
 # perform RMSprop update with

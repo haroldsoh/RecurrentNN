@@ -1,4 +1,4 @@
-type AdamSolver
+type AdamSolver <: Solver
   timestep::Int64
   alpha::Float64
   beta1::Float64
@@ -11,7 +11,11 @@ type AdamSolver
   AdamSolver() = new(1, 0.001, 0.9, 0.999, 1e-8, [], [])
 end
 
-function step!(solver::AdamSolver, model::Model, sparams::SolverParams)
+type AdamSolverParams <: SolverParams
+    clipval::Float64
+end
+
+function step!(solver::AdamSolver, model::Model, sparams::AdamSolverParams)
 
   # perform parameter update
 

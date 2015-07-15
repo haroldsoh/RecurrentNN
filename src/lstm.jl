@@ -80,7 +80,7 @@ type LSTM <: Model
     end
 end
 
-function forwardprop(g::Graph, model::LSTM, x, prev)
+function forwardprop!(g::Graph, model::LSTM, x, prev)
 
     # forward prop for a single tick of LSTM
     # g is graph to append ops to
@@ -126,41 +126,40 @@ function forwardprop(g::Graph, model::LSTM, x, prev)
         bc = model.hdlayers[d].bc
 
         # input gate
-        h0 = mul(g, wix, input)
-        h1 = mul(g, wih, hdprev)
-        inputgate = sigmoid(g, add(g, h0, h1, bi))
+        h0 = mul!(g, wix, input)
+        h1 = mul!(g, wih, hdprev)
+        inputgate = sigmoid!(g, add!(g, h0, h1, bi))
 
         # forget gate
-        h2 = mul(g, wfx, input)
-        h3 = mul(g, wfh, hdprev)
-        forgetgate = sigmoid(g, add(g, h2, h3, bf))
+        h2 = mul!(g, wfx, input)
+        h3 = mul!(g, wfh, hdprev)
+        forgetgate = sigmoid!(g, add!(g, h2, h3, bf))
 
         # output gate
-        h4 =mul(g, wox, input)
-        h5 = mul(g, woh, hdprev)
-        outputgate = sigmoid(g, add(g, h4, h5, bo))
+        h4 =mul!(g, wox, input)
+        h5 = mul!(g, woh, hdprev)
+        outputgate = sigmoid!(g, add!(g, h4, h5, bo))
 
         # write operation on cells
-        h6 = mul(g, wcx, input)
-        h7 = mul(g, wch, hdprev)
-        cellwrite = tanh(g, add(g, h6, h7, bc))
+        h6 = mul!(g, wcx, input)
+        h7 = mul!(g, wch, hdprev)
+        cellwrite = tanh!(g, add!(g, h6, h7, bc))
 
         # compute new cell activation
-        retaincell = eltmul(g, forgetgate, cellprev) # what do we keep from cell
-        writecell = eltmul(g, inputgate, cellwrite)  # what do we write to cell
-        cell_d = add(g, retaincell, writecell)        # new cell contents
+        retaincell = eltmul!(g, forgetgate, cellprev) # what do we keep from cell
+        writecell = eltmul!(g, inputgate, cellwrite)  # what do we write to cell
+        cell_d = add!(g, retaincell, writecell)        # new cell contents
 
         # compute hidden state as gated, saturated cell activations
-        hidden_d = eltmul(g, outputgate, tanh(g, cell_d))
+        hidden_d = eltmul!(g, outputgate, tanh!(g, cell_d))
 
         push!(hidden,hidden_d)
         push!(cell, cell_d)
     end
 
     # one decoder to outputs at end
-    output = add(g, mul(g, model.whd, hidden[end]),model.bd)
+    output = add!(g, mul!(g, model.whd, hidden[end]),model.bd)
 
     # return cell memory, hidden representation and output
     return hidden, cell, output
 end
-

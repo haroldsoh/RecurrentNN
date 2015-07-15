@@ -69,7 +69,7 @@ type GRU <: Model
     end
 end
 
-function forwardprop(g::Graph, model::GRU, x, prev)
+function forwardprop!(g::Graph, model::GRU, x, prev)
 
     # forward prop for a single tick of GRU
     # g is graph to append ops to
@@ -106,33 +106,32 @@ function forwardprop(g::Graph, model::GRU, x, prev)
         bc = model.hdlayers[d].bc
 
         # update gate
-        h0 = mul(g, wux, input)
-        h1 = mul(g, wuh, hdprev)
-        updategate = sigmoid(g, add(g, h0, h1, bu))
+        h0 = mul!(g, wux, input)
+        h1 = mul!(g, wuh, hdprev)
+        updategate = sigmoid!(g, add!(g, h0, h1, bu))
 
         # reset gate
-        h2 = mul(g, wrx, input)
-        h3 = mul(g, wrh, hdprev)
-        resetgate = sigmoid(g, add(g, h2, h3, br))
+        h2 = mul!(g, wrx, input)
+        h3 = mul!(g, wrh, hdprev)
+        resetgate = sigmoid!(g, add!(g, h2, h3, br))
 
         # candidate
-        p1 = mul(g, wcx, input)
-        p2 = mul(g, wch, eltmul(g, resetgate, hdprev))
-        candidate = tanh(g, add(g, p1, p2, bc))
+        p1 = mul!(g, wcx, input)
+        p2 = mul!(g, wch, eltmul!(g, resetgate, hdprev))
+        candidate = tanh!(g, add!(g, p1, p2, bc))
 
         # compute hidden state
         ones = onesNNMat(updategate.n, updategate.d)
-        oneminusupdate = add(g, mul(g, updategate, -1.0), 1.0)
-        hidden_d = add(g, eltmul(g, oneminusupdate, hdprev),
-                          eltmul(g, updategate, candidate))
+        oneminusupdate = add!(g, mul!(g, updategate, -1.0), 1.0)
+        hidden_d = add!(g, eltmul!(g, oneminusupdate, hdprev),
+                          eltmul!(g, updategate, candidate))
 
         push!(hidden,hidden_d)
     end
 
     # one decoder to outputs at end
-    output = add(g, mul(g, model.whd, hidden[end]),model.bd)
+    output = add!(g, mul!(g, model.whd, hidden[end]),model.bd)
 
     # return cell memory, hidden representation and output
     return hidden, output
 end
-

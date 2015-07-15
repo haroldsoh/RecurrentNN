@@ -39,7 +39,7 @@ type RNN <: Model
     end
 end
 
-function forwardprop(g::Graph, model::RNN, x, prev)
+function forwardprop!(g::Graph, model::RNN, x, prev)
 
     # forward prop for a single tick of RNN
     # G is graph to append ops to
@@ -67,17 +67,17 @@ function forwardprop(g::Graph, model::RNN, x, prev)
         bhh = model.hdlayers[d].bhh
 
 #         println((d,size(wxh.w),(size(input.w))))
-        h0 = mul(g, wxh, input)
-        h1 = mul(g, whh, hdprev)
+        h0 = mul!(g, wxh, input)
+        h1 = mul!(g, whh, hdprev)
 #         println((typeof(h0),typeof(h1),typeof(bhh)))
-        hidden_d = relu(g, add(g, add(g, h0, h1), bhh))
+        hidden_d = relu!(g, add!(g, add!(g, h0, h1), bhh))
 
         push!(hidden,hidden_d)
     end
 
     # one decoder to outputs at end
 #     println((size(model.whd.w), size(hidden[end].w), size(model.bd.w)))
-    output = add(g, mul(g, model.whd, hidden[end]),model.bd)
+    output = add!(g, mul!(g, model.whd, hidden[end]),model.bd)
 
     # return hidden representation and output
     return hidden, output

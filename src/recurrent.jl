@@ -21,5 +21,3 @@ function softmax(m::NNMatrix)
     out.w /= sum(out.w)
     return out
 end
-
-

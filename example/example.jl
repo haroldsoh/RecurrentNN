@@ -93,10 +93,10 @@ function predictsentence(model::Model, wil::NNMatrix, samplei::Bool=false, temp:
 
         # RNN tick
         ix = length(s) == 0 ? 0 : letterToIndex[s[end]]
-        x = rowpluck(g, wil, ix+1) # get letter's embedding (vector)
+        x = rowpluck!(g, wil, ix+1) # get letter's embedding (vector)
 
         # returns a 2-tuple (RNN) or 3-tuple (LSTM). Last part is always outputNNMatrix
-        prev = forwardprop(g, model, x, prev)
+        prev = forwardprop!(g, model, x, prev)
 
         # sample predicted letter
         logprobs =  prev[end] # interpret output (last position in tuple) as logprobs
@@ -144,10 +144,10 @@ function costfunc(model:: Model, wil::NNMatrix, sent::String)
         ix_target = i == n ? 0 : letterToIndex[sent[i+1]] # last step: end with END token
 
         # get the letter embbeding of the char
-        x = rowpluck(g, wil, ix_source+1)
+        x = rowpluck!(g, wil, ix_source+1)
 
         # returns a 2-tuple (RNN) or 3-tuples (LSTM). Last part of tuple is always the outputNNMatrix
-        prev = forwardprop(g, model, x, prev)
+        prev = forwardprop!(g, model, x, prev)
 
         # set gradients into logprobabilities
         logprobs =  prev[end] # interpret output (last position in tuple) as logprobs
@@ -177,7 +177,7 @@ function tick(model::Model, wil::NNMatrix, sents::Array, solver::Solver, tickite
 
     # use built up graph of backprop functions to compute backprop
     # i.e. set .dw fields in matrices
-    backprop(g)
+    backprop!(g)
 
     # perform param update ( learning_rate, regc, clipval are global constants)
     solverstats = step(solver, model, learning_rate, regc, clipval)

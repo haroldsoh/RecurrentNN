@@ -102,7 +102,7 @@ type GFLSTM <: Model
     end
 end
 
-function forwardprop(g::Graph, model::GFLSTM, x, prev)
+function forwardprop!(g::Graph, model::GFLSTM, x, prev)
 
     # forward prop for a single tick of Gated Feedback LSTM
     # g is graph to append ops to
@@ -125,7 +125,7 @@ function forwardprop(g::Graph, model::GFLSTM, x, prev)
 
     hidden = Array(NNMatrix,0)
     cell = Array(NNMatrix,0)
-    hstar = concat(g, hiddenprevs...)
+    hstar = concat!(g, hiddenprevs...)
     layers = length(model.hiddensizes)
     for d in 1:layers
         input = d == 1 ? x : hidden[d-1]
@@ -152,53 +152,52 @@ function forwardprop(g::Graph, model::GFLSTM, x, prev)
         bc = model.hdlayers[d].bc
 
         # input gate
-        h0 = mul(g, wix, input)
-        h1 = mul(g, wih, hdprev)
-        inputgate = sigmoid(g, add(g, h0, h1, bi))
+        h0 = mul!(g, wix, input)
+        h1 = mul!(g, wih, hdprev)
+        inputgate = sigmoid!(g, add!(g, h0, h1, bi))
 
         # forget gate
-        h2 = mul(g, wfx, input)
-        h3 = mul(g, wfh, hdprev)
-        forgetgate = sigmoid(g, add(g, h2, h3, bf))
+        h2 = mul!(g, wfx, input)
+        h3 = mul!(g, wfh, hdprev)
+        forgetgate = sigmoid!(g, add!(g, h2, h3, bf))
 
         # output gate
-        h4 =mul(g, wox, input)
-        h5 = mul(g, woh, hdprev)
-        outputgate = sigmoid(g, add(g, h4, h5, bo))
+        h4 =mul!(g, wox, input)
+        h5 = mul!(g, woh, hdprev)
+        outputgate = sigmoid!(g, add!(g, h4, h5, bo))
 
         # global reset gates
         gr = Array(NNMatrix, layers)
         @inbounds for gd in 1:layers
-            hg = mul(g, wgx[gd], input)
-            hu = mul(g, wgh[gd], hstar)
-            gr[gd] = sigmoid(g, add(g, hg, hu, bg[gd]))
+            hg = mul!(g, wgx[gd], input)
+            hu = mul!(g, wgh[gd], hstar)
+            gr[gd] = sigmoid!(g, add!(g, hg, hu, bg[gd]))
         end
 
         # write operation on cells
-        h6 = mul(g, wcx, input)
+        h6 = mul!(g, wcx, input)
         h = Array(NNMatrix, layers)
         @inbounds for hd in 1:layers
-            hi = mul(g, wch[hd], hiddenprevs[hd])
-            h[hd] = eltmul(g, gr[hd], hi)
+            hi = mul!(g, wch[hd], hiddenprevs[hd])
+            h[hd] = eltmul!(g, gr[hd], hi)
         end
-        cellwrite = tanh(g, add(g, h6, bc, h...))
+        cellwrite = tanh!(g, add!(g, h6, bc, h...))
 
         # compute new cell activation
-        retaincell = eltmul(g, forgetgate, cellprev) # what do we keep from cell
-        writecell = eltmul(g, inputgate, cellwrite)  # what do we write to cell
-        cell_d = add(g, retaincell, writecell)        # new cell contents
+        retaincell = eltmul!(g, forgetgate, cellprev) # what do we keep from cell
+        writecell = eltmul!(g, inputgate, cellwrite)  # what do we write to cell
+        cell_d = add!(g, retaincell, writecell)        # new cell contents
 
         # compute hidden state as gated, saturated cell activations
-        hidden_d = eltmul(g, outputgate, tanh(g, cell_d))
+        hidden_d = eltmul!(g, outputgate, tanh!(g, cell_d))
 
         push!(hidden,hidden_d)
         push!(cell, cell_d)
     end
 
     # one decoder to outputs at end
-    output = add(g, mul(g, model.whd, hidden[end]),model.bd)
+    output = add!(g, mul!(g, model.whd, hidden[end]),model.bd)
 
     # return cell memory, hidden representation and output
     return hidden, cell, output
 end
-
