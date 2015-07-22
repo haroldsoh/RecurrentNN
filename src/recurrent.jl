@@ -7,7 +7,14 @@ type NNMatrix # Neural net layer's weights & gradients
     dw::Matrix{Float64} # matrix of gradients
     NNMatrix(n::Int) = new(n, 1, zeros(n,1), zeros(n,1))
     NNMatrix(n::Int, d::Int) = new(n, d, zeros(n,d), zeros(n,d))
-    NNMatrix(n::Int, d::Int, w::Array, dw::Array) = new(n, d, w, dw)
+    NNMatrix(n::Int, d::Int, w::Matrix{Float64}, dw::Matrix{Float64}) = new(n, d, w, dw)
+    NNMatrix(w::Array) = new(size(w,1), size(w,2), w, zeros(size(w,1),size(w,2)))
+    function NNMatrix(w::Matrix{Float64}, dw::Matrix{Float64})
+      if size(w) != size(dw)
+        error("Matrix and Gradient Matrix sizes do not match");
+      end
+      new(size(w,1), size(w,2), w, dw)
+    end
 end
 
 randNNMat(n::Int, d::Int, std::FloatingPoint=1.) = NNMatrix(n, d, randn(n,d)*std, zeros(n,d))
