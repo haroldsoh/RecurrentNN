@@ -123,11 +123,18 @@ function sigmoid!(g::Graph, m::NNMatrix)
     return out
 end
 
-function relu!(g::Graph, m::NNMatrix)
+
+function relu(m::NNMatrix)
     out = NNMatrix(m.n, m.d)
     @inbounds for j = 1:m.d, i = 1:m.n
         out.w[i,j] = m.w[i,j] < 0. ? 0. : m.w[i,j]
     end
+    return out
+end
+
+
+function relu!(g::Graph, m::NNMatrix)
+    out = relu(m)
     if g.doBackprop
         push!(g.backprop,
           function ()
@@ -138,6 +145,7 @@ function relu!(g::Graph, m::NNMatrix)
     end
     return out
 end
+
 
 function mul!(g::Graph, m1::NNMatrix, m2::NNMatrix)
     out = NNMatrix(m1.n, m2.d, m1.w * m2.w, zeros(m1.n, m2.d))
