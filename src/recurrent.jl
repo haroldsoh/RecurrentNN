@@ -19,7 +19,7 @@ end
 
 randNNMat(n::Int, d::Int, std::FloatingPoint=1.) = NNMatrix(n, d, randn(n,d)*std, zeros(n,d))
 onesNNMat(n::Int, d::Int) = NNMatrix(n, d, ones(n, d), zeros(n, d))
-
+zerosNNMat(n::Int, d::Int) = NNMatrix(n,d)
 
 function softmax(m::NNMatrix)
     out = NNMatrix(m.n,m.d)

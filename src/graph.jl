@@ -22,6 +22,50 @@ function rowpluck!(g::Graph, m::NNMatrix, ix::Int)
     return out
 end
 
+function transpose!(g::Graph, m::NNMatrix)
+    # pluck a row of m and return it as a column vector
+    out = NNMatrix(m.d, m.n)
+    out.w = m.w';
+    if g.doBackprop
+        push!(g.backprop,
+              function ()
+                 m.dw += out.dw'
+              end )
+    end
+    return out
+end
+
+function reshape!(g::Graph, m::NNMatrix, n::Int, d::Int)
+  # checks to make sure the sizes are compatible
+  if n*d != m.n*m.d
+    error("Shape sizes have to be compatible")
+  end
+
+  out = NNMatrix(reshape(m.w, n, d));
+  if g.doBackprop
+    push!( g.backprop,
+      function()
+        m.dw += reshape(out.dw, m.n, m.d)
+      end )
+  end
+  return out
+end
+
+# sums all elements in a NNMatrix
+function sum!(g::Graph, m::NNMatrix)
+  out = NNMatrix(1,1);
+  out.w[1] = sum(m.w);
+
+  if g.doBackprop
+    push!(g.backprop,
+      function()
+        m.dw += out.dw[1]
+      end )
+  end
+  return out;
+end
+
+
 function concat!(g::Graph, ms::NNMatrix...)
     n = 0
     @inbounds for i in 1:length(ms)
