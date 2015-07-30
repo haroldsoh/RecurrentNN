@@ -1,6 +1,6 @@
-# RecurrentNN.jl
+# DRNN.jl
 
-RecurrentNN.jl is a Julia language package originally based on Andrej Karpathy's excellent [RecurrentJS](http://cs.stanford.edu/people/karpathy/recurrentjs) library in javascript.
+DRNN.jl is a fork of the [RecurrentNN.jl](https://github.com/Andy-P/RecurrentNN.jl) package by [Andre Pemmelaar](https://github.com/Andy-P), which is a Julia language package based on Andrej Karpathy's [RecurrentJS](http://cs.stanford.edu/people/karpathy/recurrentjs) library in javascript.
 It implements:
 
 - Deep **Recurrent Neural Networks** (RNN)
@@ -9,26 +9,17 @@ It implements:
 - **Gated Feedback Recurrent Neural Networks** (GF-RNN)
 - **Gated Feedback Long Short-Term Memory networks** (GF-LSTM)
 
-In fact, the library is more general because it has functionality to construct arbitrary **expression graphs** over which the library can perform **automatic differentiation** similar to what you may find in Theano for Python, or in Torch etc. Currently, the code uses this very general functionality to implement RNN/LSTM/GRU, but one can build arbitrary Neural Networks and do automatic backprop.
+The library can construct arbitrary **expression graphs** allowing **automatic differentiation** similar to what you may find in Theano for Python, or in Torch. Currently, the code uses this very general functionality to implement RNN/LSTM/GRU, but one can build arbitrary Neural Networks and do automatic backprop.
 
 For information an the **Gated Feedback** variants see [Gated Feedback Recurrent Neural Networks](http://arxiv.org/abs/1502.02367)
 
 
-## Online demo of original library in javascript
-
-An online demo that memorizes character sequences can be found below. Sentences are input data and the networks are trained to predict the next character in a sentence. Thus, they learn English from scratch character by character and eventually after some training generate entirely new sentences that sometimes make some sense :)
-
-[Character Sequence Memorization Demo](http://cs.stanford.edu/people/karpathy/recurrentjs)
-
-*The same demo as above implemented in Julia can be found in* [example/example.jl](https://github.com/Andy-P/RecurrentNN.jl/blob/master/example/example.jl)
-
-
-## Example code
+## Example code for LSTM
 
 To construct and train an LSTM for example, you would proceed as follows:
 
 ```julia
-using RecurrentNN
+using DRNN
 
 # takes as input Mat of 10x1, contains 2 hidden layers of
 # 20 neurons each, and outputs a Mat of size 2x1
@@ -83,10 +74,20 @@ sparams = RMSPropSolverParams(0.01, 0.0001, 5.0)
 step!(s, lstm, sparams);
 ```
 
-A much more detailed example can be found in the example folder.
+
+## Character Sequence Memorization Example  
+
+An demo that memorizes character sequences (based on the [recurrentjs demo](http://cs.stanford.edu/people/karpathy/recurrentjs) can be found in [example/example.jl](https://github.com/Andy-P/DRNN.jl/blob/master/example/example.jl). In brief, the Deep RNN learns how to construct sentences at the character level by learning from sample sentences.
 
 ##Credits
 This library draws on the work of [Andrej Karpathy](https://github.com/karpathy). Speed enhancements were added by [Iain Dunning](https://github.com/IainNZ). The Gated Recurrent Neural Network implementation and Gated Feedback variants were added by [Paul Heideman](https://github.com/paulheideman). [Harold Soh](https://github.com/haroldsoh) implemented the Adam optimizer.
+
+## FAQ
+#### Why the fork and change of name?
+I wanted to implement some very experimental functions (attention networks). I found "RecurrentNN" too long a name and thought "DRNN" for "Deep Recurrent Neural Nets" to be more appropriate.
+
+#### Future plans?
+This library may be pulled back into the main RecurrentNN library in the future.
 
 ## License
 MIT

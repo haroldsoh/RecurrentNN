@@ -1,4 +1,4 @@
-The RecurrentNN.jl package is licensed under the MIT "Expat" License:
+The DRNN.jl package is licensed under the MIT "Expat" License:
 
 > Copyright (c) 2015: Andre Pemmelaar.
 >

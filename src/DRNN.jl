@@ -1,4 +1,4 @@
-module RecurrentNN
+module DRNN
 import Base.tanh
 
 export Model, RNN, LSTM, GRU, GFLSTM, GFGRU
@@ -9,6 +9,7 @@ export Graph, backprop!, rowpluck!
 
 include("recurrent.jl")
 include("graph.jl")
+include("conv.jl")
 include("solver.jl")
 include("rmspropsolver.jl")
 include("adamsolver.jl")
@@ -17,6 +18,5 @@ include("lstm.jl")
 include("gru.jl")
 include("gflstm.jl")
 include("gfgru.jl")
-
 
 end # module

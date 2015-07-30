@@ -1,5 +1,5 @@
-using RecurrentNN
-# reload("RecurrentNN.jl")
+using DRNN
+# reload("DRNN.jl")
 
 # # global settings
 # const generator = "rnn" # can be 'rnn' or 'lstm'
